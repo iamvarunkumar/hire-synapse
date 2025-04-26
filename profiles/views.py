@@ -227,6 +227,239 @@ class DeleteSkillView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
          messages.success(self.request, f'Skill "{skill_name}" deleted successfully!')
          return response
 
-    # If using GET request for deletion link (less secure, not recommended for delete)
-    # def get(self, request, *args, **kwargs):
-    #     return self.post(request, *args, **kwargs)
+    from django.shortcuts import render, redirect, get_object_or_404
+# from django.urls import reverse_lazy, reverse
+# from django.views.generic import DetailView, UpdateView, CreateView, DeleteView, View
+# from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+# from django.contrib import messages
+# from .models import UserProfile, Education, WorkExperience, Skill, Project, Award, Certification # <-- Add new models
+# from .forms import (UserProfileForm, EducationForm, WorkExperienceForm, SkillForm, # <-- Add new forms
+#                     ProjectForm, AwardForm, CertificationForm)
+
+# --- ProfileView Modification ---
+class ProfileView(LoginRequiredMixin, View):
+    template_name = 'profiles/profile_detail.html'
+
+    def get(self, request, *args, **kwargs):
+        profile = get_object_or_404(UserProfile, user=request.user)
+        # Forms for display and potential submission
+        profile_form = UserProfileForm(instance=profile)
+        education_form = EducationForm()
+        experience_form = WorkExperienceForm()
+        skill_form = SkillForm()
+        # --- NEW Forms for Sprint 3 ---
+        project_form = ProjectForm()
+        award_form = AwardForm()
+        certification_form = CertificationForm()
+
+        context = {
+            'profile': profile,
+            'profile_form': profile_form,
+            'education_form': education_form,
+            'experience_form': experience_form,
+            'skill_form': skill_form,
+            # --- NEW Forms Context ---
+            'project_form': project_form,
+            'award_form': award_form,
+            'certification_form': certification_form,
+            # --- Lists for display ---
+            'education_list': profile.education.all(),
+            'experience_list': profile.experience.all(),
+            'skill_list': profile.skills.all(),
+            'project_list': profile.projects.all(), # New
+            'award_list': profile.awards.all(), # New
+            'certification_list': profile.certifications.all(), # New
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        # --- Handle UserProfile update ---
+        profile = get_object_or_404(UserProfile, user=request.user)
+        profile_form = UserProfileForm(request.POST, instance=profile)
+
+        if profile_form.is_valid():
+            profile_form.save()
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('profiles:profile_detail')
+        else:
+            # --- Repopulate context if profile form is invalid ---
+            education_form = EducationForm()
+            experience_form = WorkExperienceForm()
+            skill_form = SkillForm()
+            project_form = ProjectForm()
+            award_form = AwardForm()
+            certification_form = CertificationForm()
+            context = {
+                'profile': profile,
+                'profile_form': profile_form, # Show form with errors
+                'education_form': education_form,
+                'experience_form': experience_form,
+                'skill_form': skill_form,
+                'project_form': project_form,
+                'award_form': award_form,
+                'certification_form': certification_form,
+                'education_list': profile.education.all(),
+                'experience_list': profile.experience.all(),
+                'skill_list': profile.skills.all(),
+                'project_list': profile.projects.all(),
+                'award_list': profile.awards.all(),
+                'certification_list': profile.certifications.all(),
+            }
+            messages.error(request, 'Please correct the errors in the profile section.')
+            return render(request, self.template_name, context)
+
+# --- Project Views ---
+class AddProjectView(LoginRequiredMixin, CreateView):
+    model = Project
+    form_class = ProjectForm
+    template_name = 'profiles/add_edit_form.html'
+    success_url = reverse_lazy('profiles:profile_detail')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form_title'] = 'Add Project'
+        return context
+
+    def form_valid(self, form):
+        form.instance.profile = self.request.user.profile
+        messages.success(self.request, 'Project added successfully!')
+        return super().form_valid(form)
+
+class EditProjectView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Project
+    form_class = ProjectForm
+    template_name = 'profiles/add_edit_form.html'
+    success_url = reverse_lazy('profiles:profile_detail')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form_title'] = 'Edit Project'
+        return context
+
+    def test_func(self):
+        return self.request.user == self.get_object().profile.user
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Project updated successfully!')
+        return super().form_valid(form)
+
+class DeleteProjectView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Project
+    template_name = 'profiles/delete_confirm.html'
+    success_url = reverse_lazy('profiles:profile_detail')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['confirm_message'] = f"Are you sure you want to delete the project: {self.object.name}?"
+        return context
+
+    def test_func(self):
+        return self.request.user == self.get_object().profile.user
+
+    def post(self, request, *args, **kwargs):
+         messages.success(self.request, 'Project deleted successfully!')
+         return super().post(request, *args, **kwargs)
+
+# --- Award Views ---
+class AddAwardView(LoginRequiredMixin, CreateView):
+    model = Award
+    form_class = AwardForm
+    template_name = 'profiles/add_edit_form.html'
+    success_url = reverse_lazy('profiles:profile_detail')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form_title'] = 'Add Award/Honor'
+        return context
+
+    def form_valid(self, form):
+        form.instance.profile = self.request.user.profile
+        messages.success(self.request, 'Award added successfully!')
+        return super().form_valid(form)
+
+class EditAwardView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Award
+    form_class = AwardForm
+    template_name = 'profiles/add_edit_form.html'
+    success_url = reverse_lazy('profiles:profile_detail')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form_title'] = 'Edit Award/Honor'
+        return context
+
+    def test_func(self):
+        return self.request.user == self.get_object().profile.user
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Award updated successfully!')
+        return super().form_valid(form)
+
+class DeleteAwardView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Award
+    template_name = 'profiles/delete_confirm.html'
+    success_url = reverse_lazy('profiles:profile_detail')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['confirm_message'] = f"Are you sure you want to delete the award: {self.object.title}?"
+        return context
+
+    def test_func(self):
+        return self.request.user == self.get_object().profile.user
+
+    def post(self, request, *args, **kwargs):
+         messages.success(self.request, 'Award deleted successfully!')
+         return super().post(request, *args, **kwargs)
+
+# --- Certification Views ---
+class AddCertificationView(LoginRequiredMixin, CreateView):
+    model = Certification
+    form_class = CertificationForm
+    template_name = 'profiles/add_edit_form.html'
+    success_url = reverse_lazy('profiles:profile_detail')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form_title'] = 'Add Certification'
+        return context
+
+    def form_valid(self, form):
+        form.instance.profile = self.request.user.profile
+        messages.success(self.request, 'Certification added successfully!')
+        return super().form_valid(form)
+
+class EditCertificationView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Certification
+    form_class = CertificationForm
+    template_name = 'profiles/add_edit_form.html'
+    success_url = reverse_lazy('profiles:profile_detail')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form_title'] = 'Edit Certification'
+        return context
+
+    def test_func(self):
+        return self.request.user == self.get_object().profile.user
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Certification updated successfully!')
+        return super().form_valid(form)
+
+class DeleteCertificationView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Certification
+    template_name = 'profiles/delete_confirm.html'
+    success_url = reverse_lazy('profiles:profile_detail')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['confirm_message'] = f"Are you sure you want to delete the certification: {self.object.name}?"
+        return context
+
+    def test_func(self):
+        return self.request.user == self.get_object().profile.user
+
+    def post(self, request, *args, **kwargs):
+         messages.success(self.request, 'Certification deleted successfully!')
+         return super().post(request, *args, **kwargs)
