@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}My Cover Letters{% endblock %}
+
+{% block content %}
+<div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 md:p-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-semibold text-primary">My Cover Letters</h1>
+        <a href="{% url 'documents:coverletter_create' %}" class="button inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            + Create New Cover Letter
+        </a>
+    </div>
+
+    {% if coverletter_list %}
+        <ul class="space-y-4">
+            {% for cl in coverletter_list %}
+            <li class="border-b pb-4 last:border-b-0" style="border-color: var(--border-color);">
+                <div class="flex justify-between items-start">
+                    <div class="flex-grow mr-4">
+                        <h2 class="text-lg font-medium text-primary hover:text-indigo-600 dark:hover:text-indigo-400">
+                             {# Link title to the edit view for quick access #}
+                             <a href="{% url 'documents:coverletter_edit' cl.pk %}">{{ cl.title }}</a>
+                        </h2>
+                        {# Show a preview of the body text #}
+                        <p class="text-sm text-secondary mt-1 line-clamp-2">{{ cl.body|striptags|truncatewords:30 }}</p>
+                        <p class="text-xs text-secondary mt-1">Last updated: {{ cl.updated_at|date:"d M Y, P" }}</p>
+                    </div>
+                     <div class="flex space-x-2 flex-shrink-0">
+                         <a href="{% url 'documents:coverletter_edit' cl.pk %}" class="text-indigo-600 hover:text-indigo-900 text-sm">Edit</a>
+                         <form method="post" action="{% url 'documents:coverletter_delete' cl.pk %}" class="inline" onsubmit="return confirm('Are you sure you want to delete \'{{ cl.title }}\'?');">
+                             {% csrf_token %}
+                             <button type="submit" class="text-red-600 hover:text-red-900 text-sm font-medium">Delete</button>
+                         </form>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-secondary">You haven't created any cover letters yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

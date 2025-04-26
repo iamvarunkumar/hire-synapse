@@ -1,32 +1,21 @@
-"""
-URL configuration for hire_synapse project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include # Make sure 'include' is imported and this line has NO leading whitespace
+# Remove RedirectView imports if they were added before
+# from django.views.generic.base import RedirectView
+# from django.urls import reverse_lazy
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    # Include authentication URLs (assuming from Sprint 1)
-    # path('accounts/', include('django.contrib.auth.urls')), # Or your custom auth app
-    # path('accounts/', include('your_auth_app.urls')),
+    # Map the root path ('') to the urls defined in the 'core' app
+    path('', include('core.urls', namespace='core')), # Ensure this line is correctly indented
 
-    # Include profile URLs
-    path('profile/', include('profiles.urls', namespace='profiles')),
-    path('documents/', include('documents.urls', namespace='documents')),
-    path('jobs/', include('profiles.urls', namespace='jobs')),
+    # Admin site URL
+    path('admin/', admin.site.urls), # Ensure this line is correctly indented
 
-    # Add other app URLs here
-    # path('', include('core.urls')), # Example home page app
+    # Include URLs from your other apps
+    path('profile/', include('profiles.urls', namespace='profiles')), # Ensure this line is correctly indented
+    path('documents/', include('documents.urls', namespace='documents')), # Ensure this line is correctly indented
+    path('jobs/', include('jobs.urls', namespace='jobs')), # Ensure this line is correctly indented
+
+    # Add include for authentication URLs if you have them
+    # path('accounts/', include('django.contrib.auth.urls')), # Ensure this line is correctly indented
 ]

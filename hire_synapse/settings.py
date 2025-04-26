@@ -11,9 +11,66 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent # Ensure BASE_DIR is defined
+
+# Basic Logging Configuration
+# This sends logs to the console. You can customize handlers (e.g., FileHandler)
+# and formatters for more advanced logging.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False, # Keep Django's default loggers active
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {asctime} {module}: {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO', # Log INFO level and above (INFO, WARNING, ERROR, CRITICAL)
+            'class': 'logging.StreamHandler', # Output to console (stderr)
+            'formatter': 'simple', # Use the simple format
+        },
+        # Example File Handler (Optional - uncomment and configure path)
+        # 'file': {
+        #     'level': 'INFO',
+        #     'class': 'logging.FileHandler',
+        #     'filename': os.path.join(BASE_DIR, 'logs/django.log'), # Create a 'logs' directory first
+        #     'formatter': 'verbose',
+        # },
+    },
+    'loggers': {
+        'django': { # Django's internal logger
+            'handlers': ['console'], # Send Django logs to console
+            'level': 'INFO', # Or 'WARNING' to reduce noise
+            'propagate': True,
+        },
+        # Logger for your specific apps (adjust level as needed)
+        'profiles': {
+            'handlers': ['console'], # Send 'profiles' app logs to console
+            'level': 'INFO', # Or 'DEBUG' during development
+            'propagate': False, # Don't pass to parent loggers
+        },
+        'documents': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'jobs': { # Logger for the new jobs app
+            'handlers': ['console'], # Add 'file' handler here too if using file logging
+            'level': 'INFO', # Set level for this app (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+            'propagate': False,
+        },
+        # Add loggers for other apps as needed
+    },
+}
 
 
 # Quick-start development settings - unsuitable for production
@@ -25,7 +82,7 @@ SECRET_KEY = 'django-insecure-nu87tsz_vi%vh1va!b8&=dru^sd&s-e)!3)ig@n+y##g&@f8h-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -40,6 +97,7 @@ INSTALLED_APPS = [
     'profiles',
     'documents',
     'jobs',
+    'core',
 ]
 
 MIDDLEWARE = [
@@ -56,14 +114,16 @@ ROOT_URLCONF = 'hire_synapse.urls'
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        # 👇👉 tell Django about the folder that contains base.html
+        "DIRS": [ BASE_DIR / "templates" ],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
@@ -78,7 +138,7 @@ WSGI_APPLICATION = 'hire_synapse.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3', # This should now work correctly
     }
 }
 
