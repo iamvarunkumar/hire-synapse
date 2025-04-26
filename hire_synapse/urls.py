@@ -16,7 +16,6 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     # Include authentication URLs (assuming from Sprint 1)
@@ -25,6 +24,8 @@ urlpatterns = [
 
     # Include profile URLs
     path('profile/', include('profiles.urls', namespace='profiles')),
+    path('documents/', include('documents.urls', namespace='documents')),
+    path('jobs/', include('profiles.urls', namespace='jobs')),
 
     # Add other app URLs here
     # path('', include('core.urls')), # Example home page app

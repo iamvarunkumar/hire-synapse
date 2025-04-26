@@ -37,8 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'hire_synapse_app',
-    'hire_synapse',
+    'profiles',
+    'documents',
+    'jobs',
 ]
 
 MIDDLEWARE = [
