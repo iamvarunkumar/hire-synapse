@@ -129,11 +129,4 @@ Follow these steps to set up the project locally:
 * Access the "Jobs" section to view and search job listings.
 * Access the Django admin interface at `http://127.0.0.1:8000/admin/` using your superuser credentials.
 
-## Contributing
-
-[Optional: Add guidelines here if you plan to accept contributions. This might include branching strategy, code style, pull request process, etc.]
-
-## License
-
-[Optional: Specify the license under which the project is released, e.g., MIT License, Apache 2.0, etc. If unsure, you can leave this out for now.]
 
