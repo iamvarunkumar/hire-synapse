@@ -1,0 +1,22 @@
+{# Reusable template to display skill list #}
+{% if skill_list %}
+    <div class="flex flex-wrap gap-2">
+        {% for skill in skill_list %}
+        <span class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+            {{ skill.name }}
+            {# Use the passed-in URL name for delete #}
+            <form method="post" action="{% url delete_url_name skill.pk %}" class="inline ml-1.5" onsubmit="return confirm('Are you sure you want to delete the skill \'{{ skill.name }}\'?');">
+                 {% csrf_token %}
+                 <button type="submit" class="flex-shrink-0 text-indigo-400 hover:text-indigo-600 focus:outline-none">
+                     <span class="sr-only">Remove skill {{ skill.name }}</span>
+                     <svg class="h-3 w-3" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+                        <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
+                      </svg>
+                 </button>
+             </form>
+        </span>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="text-secondary">{{ empty_message }}</p>
+{% endif %}

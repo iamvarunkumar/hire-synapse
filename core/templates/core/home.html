@@ -1,0 +1,175 @@
+{% extends "core/base.html" %} {# Extend your base template #}
+{% load static %}
+
+{% block title %}Welcome to HireSynapse{% endblock %}
+
+{% block extra_head %}
+{# Add specific styles for the interactive cards #}
+<style>
+    /* Card container styling */
+    .card-container {
+        perspective: 1000px; /* For potential 3D effects if added later */
+    }
+
+    /* Individual card styling */
+    .interactive-card {
+        position: relative; /* Needed for pseudo-element positioning */
+        overflow: hidden; /* Hide overflowing pseudo-element */
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        will-change: transform, box-shadow; /* Optimize transitions */
+        border-radius: 1rem; /* rounded-xl */
+        background-color: var(--bg-secondary); /* Use theme variable */
+        border: 1px solid var(--border-color); /* Use theme variable */
+    }
+
+    /* Add a subtle hover effect */
+    .interactive-card:hover {
+        transform: scale(1.03); /* Slightly enlarge on hover */
+        box-shadow: 0 10px 25px -5px var(--shadow-color), 0 8px 10px -6px var(--shadow-color); /* Enhanced shadow */
+    }
+
+    /* Pseudo-element for the edge lighting effect */
+    .interactive-card::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: inherit; /* Match parent's border radius */
+        /*
+         * The radial gradient creates the light effect.
+         * It's positioned using CSS variables (--mouse-x, --mouse-y) updated by JS.
+         * The gradient goes from a semi-transparent accent color to fully transparent.
+         * The size (e.g., 300px circle) determines the glow area.
+         */
+        background: radial-gradient(
+            circle 300px at calc(var(--mouse-x, 0) * 1px) calc(var(--mouse-y, 0) * 1px),
+            hsla(from var(--accent-color) h s l / 0.4), /* Accent color with alpha */
+            transparent 80% /* Fade out */
+        );
+        opacity: 0; /* Hidden by default */
+        transition: opacity 0.4s ease; /* Smooth fade in/out */
+        z-index: 0; /* Behind the card content */
+        pointer-events: none; /* Allow clicks to pass through */
+    }
+
+    /* Show the light effect when the mouse is over the card */
+    .interactive-card:hover::before {
+        opacity: 1;
+    }
+
+    /* Ensure card content is above the pseudo-element */
+    .interactive-card > * {
+        position: relative;
+        z-index: 1;
+    }
+
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="min-h-[70vh] flex flex-col items-center justify-center text-center px-4 py-12">
+
+    <h1 class="text-4xl md:text-5xl font-bold text-primary mb-4">
+        Welcome to HireSynapse
+    </h1>
+    <p class="text-lg md:text-xl text-secondary mb-10 max-w-2xl">
+        Connecting talented candidates with innovative companies. Choose your path below.
+    </p>
+
+    {# Container for the two cards #}
+    <div class="card-container grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 w-full max-w-4xl">
+
+        {# Candidate Card #}
+        <a href="/candidate/dashboard/" {# Placeholder URL #}
+           class="interactive-card block p-6 md:p-8 group" {# Add group for potential group-hover styles #}
+           data-interactive-card> {# Add data attribute for JS targeting #}
+            <div class="flex flex-col items-center">
+                <img src="https://placehold.co/150x150/a7affb/1a1a1a?text=Candidate"
+                     alt="Candidate icon"
+                     class="w-24 h-24 md:w-32 md:h-32 rounded-full mb-5 border-4 border-white dark:border-gray-700 shadow-md"
+                     onerror="this.onerror=null; this.src='https://placehold.co/150x150/cccccc/ffffff?text=Img+Error';" {# Basic fallback #}
+                     >
+                <h2 class="text-2xl md:text-3xl font-semibold text-primary mb-2">
+                    I'm a Candidate
+                </h2>
+                <p class="text-secondary text-center mb-4">
+                    Find jobs, build your resume, and prepare for interviews.
+                </p>
+                <span class="button inline-block mt-2 py-2 px-5 text-sm font-medium rounded-md group-hover:bg-indigo-700 dark:group-hover:bg-indigo-500 transition-colors">
+                    Go to Dashboard &rarr;
+                </span>
+            </div>
+        </a>
+
+        {# Recruiter Card #}
+        <a href="/recruiter/dashboard/" {# Placeholder URL #}
+           class="interactive-card block p-6 md:p-8 group"
+           data-interactive-card>
+            <div class="flex flex-col items-center">
+                 <img src="https://placehold.co/150x150/4f46e5/ffffff?text=Recruiter"
+                     alt="Recruiter icon"
+                     class="w-24 h-24 md:w-32 md:h-32 rounded-full mb-5 border-4 border-white dark:border-gray-700 shadow-md"
+                     onerror="this.onerror=null; this.src='https://placehold.co/150x150/cccccc/ffffff?text=Img+Error';" {# Basic fallback #}
+                     >
+                <h2 class="text-2xl md:text-3xl font-semibold text-primary mb-2">
+                    I'm a Recruiter
+                </h2>
+                <p class="text-secondary text-center mb-4">
+                    Post job openings, find talent, and manage candidates.
+                </p>
+                 <span class="button inline-block mt-2 py-2 px-5 text-sm font-medium rounded-md group-hover:bg-indigo-700 dark:group-hover:bg-indigo-500 transition-colors">
+                    Go to Dashboard &rarr;
+                </span>
+            </div>
+        </a>
+
+    </div> {# End card container #}
+
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+{# JavaScript for the interactive card effect #}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Select all elements with the 'data-interactive-card' attribute
+        const cards = document.querySelectorAll('[data-interactive-card]');
+
+        cards.forEach(card => {
+            // Function to update CSS variables based on mouse position
+            const updateMousePosition = (event) => {
+                // Get the bounding rectangle of the card
+                const rect = card.getBoundingClientRect();
+                // Calculate mouse X position relative to the card's left edge
+                const x = event.clientX - rect.left;
+                // Calculate mouse Y position relative to the card's top edge
+                const y = event.clientY - rect.top;
+
+                // Set the CSS custom properties on the card element
+                card.style.setProperty('--mouse-x', x);
+                card.style.setProperty('--mouse-y', y);
+                // console.log(`Card ${card.querySelector('h2').textContent.trim()}: X=${x.toFixed(0)}, Y=${y.toFixed(0)}`); // For debugging
+            };
+
+            // Add listener for mouse movement over the card
+            card.addEventListener('mousemove', updateMousePosition);
+
+            // Optional: Reset position slightly when mouse enters to avoid initial jump
+            card.addEventListener('mouseenter', (event) => {
+                 updateMousePosition(event); // Set initial position on enter
+            });
+
+            // Optional: Reset or fade out when mouse leaves
+            card.addEventListener('mouseleave', () => {
+                // You could reset the variables here if needed, but the opacity transition handles hiding
+                // card.style.removeProperty('--mouse-x');
+                // card.style.removeProperty('--mouse-y');
+            });
+        });
+    });
+</script>
+{% endblock %}

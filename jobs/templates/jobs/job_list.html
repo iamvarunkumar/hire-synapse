@@ -1,0 +1,105 @@
+{% extends "base.html" %} {# Extend your base template #}
+
+{% block title %}Job Listings{% endblock %}
+
+{% block content %}
+<div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 md:p-8">
+    <h1 class="text-2xl font-semibold text-primary mb-6">Find Your Next Opportunity</h1>
+
+    {# Form submits back to the same view using GET method #}
+    <form method="get" action="{% url 'jobs:job_list_search' %}" class="mb-8">
+        <div class="flex flex-col sm:flex-row gap-2">
+            <label for="search-input" class="sr-only">Search Jobs</label>
+            {# Input field for the search query 'q'. Value is pre-filled if a search was performed. #}
+            <input type="search" name="q" id="search-input" value="{{ search_query|default:'' }}"
+                   placeholder="Search by title, company, keyword..."
+                   class="flex-grow mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            <button type="submit" class="button inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Search
+            </button>
+        </div>
+    </form>
+
+    <div class="space-y-6">
+        {# Check if the job_list context variable (from the view) exists and is not empty #}
+        {% if job_list %}
+            {# Loop through each job object in the job_list #}
+            {% for job in job_list %}
+            <div class="border rounded-lg p-4 hover:shadow-md transition-shadow duration-200 ease-in-out" style="border-color: var(--border-color);">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-start">
+                    <div class="mb-2 sm:mb-0">
+                        <h2 class="text-lg font-semibold text-primary">{{ job.title }}</h2>
+                        <p class="text-sm font-medium text-secondary">{{ job.company_name }}</p>
+                        {% if job.location %}
+                            <p class="text-sm text-secondary">{{ job.location }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="text-sm text-secondary flex-shrink-0 text-left sm:text-right">
+                        <p>Source: {{ job.source }}</p>
+                        {# Format the date added to the database #}
+                        <p>Added: {{ job.date_added_db|date:"d M Y" }}</p>
+                        {# Display original posting date if available #}
+                        {% if job.date_posted_source %}
+                            <p>Posted: {{ job.date_posted_source|date:"d M Y" }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if job.salary_range %}
+                    <p class="text-sm text-green-700 dark:text-green-400 font-medium mt-1">{{ job.salary_range }}</p>
+                {% endif %}
+                 {# Basic description preview - line-clamp limits to 3 lines (Tailwind utility) #}
+                <p class="mt-2 text-sm text-primary line-clamp-3">{{ job.description|striptags }}</p>
+                <div class="mt-3">
+                    {# Link to the original job posting URL, opening in a new tab #}
+                    <a href="{{ job.job_url }}" target="_blank" rel="noopener noreferrer"
+                       class="button secondary inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        View Original Post &rarr;
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            {# Message displayed if job_list is empty #}
+            <p class="text-secondary text-center py-8">
+                {% if search_query %}
+                    {# Specific message if a search was performed but yielded no results #}
+                    No jobs found matching your search criteria "{{ search_query }}". Try broadening your search.
+                {% else %}
+                    {# Default message if no jobs exist in the database yet #}
+                    No job postings available at the moment. Check back later!
+                {% endif %}
+            </p>
+        {% endif %}
+    </div>
+
+    {# Check if pagination is enabled (passed from ListView context) #}
+    {% if is_paginated %}
+    <div class="mt-8 pt-4 border-t" style="border-color: var(--border-color);">
+        <nav class="flex items-center justify-between">
+            <div class="flex-1 flex justify-between sm:justify-end">
+                {# Show 'Previous' button if there's a previous page #}
+                {% if page_obj.has_previous %}
+                    {# Link includes current search query 'q' to maintain search results across pages #}
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}"
+                       class="button secondary relative inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md">
+                        Previous
+                    </a>
+                {% endif %}
+                {# Show 'Next' button if there's a next page #}
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}"
+                       class="button secondary ml-3 relative inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md">
+                        Next
+                    </a>
+                {% endif %}
+            </div>
+        </nav>
+         {# Display current page number and total pages #}
+         <p class="text-sm text-secondary text-center mt-4">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

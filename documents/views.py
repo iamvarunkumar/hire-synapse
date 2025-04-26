@@ -24,7 +24,7 @@ class CoverLetterListView(LoginRequiredMixin, ListView):
         """
         # Filter the default queryset (all CoverLetter objects)
         # to only include those where the 'user' field matches the request user.
-        return CoverLetter.objects.filter(user=self.request.user)
+        return CoverLetter.objects.filter(user=self.request.user).order_by('-updated_at') # Explicit ordering
 
 # Optional: View to display details of a single cover letter
 # class CoverLetterDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
@@ -132,4 +132,3 @@ class CoverLetterDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView)
         messages.success(self.request, 'Cover Letter deleted successfully!')
         # Call the parent DeleteView's post method to perform the deletion
         return super().post(request, *args, **kwargs)
-
