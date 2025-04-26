@@ -112,22 +112,35 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'hire_synapse.urls'
 
+# ... other settings ...
+
+# --- TEMPORARY DEBUGGING STEP: Hardcode the templates directory path ---
+# Replace the path string if your project is located elsewhere
+TEMPLATE_DIR = 'E:/Projects/Job_Match/hire_synapse/templates'
+
 TEMPLATES = [
     {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        # 👇👉 tell Django about the folder that contains base.html
-        "DIRS": [ BASE_DIR / "templates" ],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        # --- Use the hardcoded path ---
+        'DIRS': [TEMPLATE_DIR],
+        # --- End Change ---
+        'APP_DIRS': True, # Keep this True
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
             ],
         },
     },
 ]
+
+
+# --- ADD THIS LINE FOR DEBUGGING ---
+print(f"DEBUG: Template DIRS setting resolves to: {TEMPLATES[0]['DIRS']}")
+# --- END DEBUG LINE ---
+
 
 WSGI_APPLICATION = 'hire_synapse.wsgi.application'
 
